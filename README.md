@@ -4,31 +4,59 @@ An omniscient AI brain system that understands everything about applications it'
 
 ## 🎯 Vision
 
-Holy Grail Chat is the central intelligence layer for applications. It:
-- **Understands everything** about the application (full database schema, business logic, context)
-- **Remembers everything** (conversations, user preferences, historical context)
-- **Answers complex questions** across the entire application
-- **Orchestrates workflows** using AI orchestration (AgentKit)
-- **Scales across projects** - install once, use everywhere
+Holy Grail Chat is the central intelligence layer for applications with three core components:
+
+🧠 **Brain** - Database Intelligence (LangChain SQL Agent)
+- Understands everything about your application
+- Converts natural language to SQL queries
+- Auto-discovers database schema
+- Answers complex questions about data
+
+❤️ **Heart** - Conversation Memory (Mem0)
+- Remembers everything across conversations
+- Stores user preferences and context
+- Semantic search over conversations
+- Understands application history
+
+💪 **Arms & Legs** - Workflow Automation (OpenAI AgentKit) **[NON-NEGOTIABLE]**
+- Orchestrates complex business processes WITHOUT hardcoding logic
+- Multi-step workflows (create lead → send email → log activity)
+- Tool-based automation (n8n-like but AI-native)
+- Executes actions autonomously
+
+**Scales across projects** - install once as NPM package, use everywhere
 
 ## 🛠 Tech Stack
 
-### Session 1 (Current) - Foundation
-- **Vercel AI SDK** - Streaming chat framework with tool/function calling
-- **OpenAI GPT-4o** - Primary language model
+### Session 1 (Current) - Brain + Arms & Legs Foundation
+**NON-NEGOTIABLE CORE:**
+- **OpenAI AgentKit** `@openai/agents` - Workflow orchestration engine (arms & legs)
+- **LangChain SQL Agent** - Text-to-SQL conversion with schema auto-discovery (brain)
+
+**Infrastructure:**
+- **Vercel AI SDK** (`ai`) - Chat streaming framework
+- **OpenAI GPT-4** - Primary language model
 - **Vercel AI Gateway** - Multi-provider routing (extensible to DeepSeek, Kimi K2, etc.)
-- **LangChain SQL Agent** - Text-to-SQL conversion with schema auto-discovery
-- **Supabase + PGVector** - Database + vector embeddings for semantic search
+- **Supabase + PGVector** - Database + vector embeddings
+- **Next.js 14** - Production framework with App Router
 
-### Session 2 - Memory System
+### Session 2 - Heart Integration
 - **Mem0** - Persistent conversation memory (vector + graph + key-value)
-- **PGVector** - Unified vector storage (Mem0 + semantic cache)
+- **PGVector** - Unified vector storage (Mem0 + semantic cache + LangChain)
+- Full memory persistence across sessions
 
-### Session 3 - Workflows
-- **OpenAI AgentKit** - Workflow orchestration without business logic
+### Session 3 - Full AgentKit Integration
+- Complete OpenAI AgentKit workflow implementation
+- Complex multi-step business process automation
+- Tool registry and orchestration
+- Advanced workflow patterns
 
 ### Session 4 - Production Ready
-- Security hardening, RLS policies, monitoring, comprehensive testing
+- Security hardening (RLS policies)
+- Rate limiting and caching strategies
+- Observability and monitoring
+- Comprehensive test suite
+- Performance optimization
 
 ## 📦 Installation & Setup
 
@@ -61,20 +89,32 @@ npm run dev
 
 ## 🚀 Current Capabilities (Session 1)
 
-### Query Database
+### Layer 1: Brain - Database Intelligence
 Ask questions about your application data:
 - "How many leads were created last week?"
 - "What are the top performing campaigns?"
 - "Show me all voice cartridges with more than 100 uses"
 
-The chat automatically converts natural language to SQL queries and returns real data.
+The chat automatically converts natural language to SQL queries via LangChain SQL Agent.
+
+### Layer 3: Arms & Legs - Workflow Automation (AgentKit Foundation)
+Ready to orchestrate business processes:
+- "Generate a viral post" → triggers post generation workflow
+- "Create lead from DM" → multi-step lead creation workflow
+- "Launch campaign" → multi-channel campaign deployment workflow
+- "Qualify lead" → lead scoring and routing workflow
+
+Available workflows are ready to execute in full form during Session 3.
 
 ### Key Features
-- ✅ Streaming responses (real-time chat)
-- ✅ Database query tool (text-to-SQL via LangChain)
+- ✅ Three-layer architecture (Brain + Heart + Arms/Legs)
+- ✅ LangChain SQL Agent for database queries
+- ✅ AgentKit workflow detection and orchestration foundation
 - ✅ Schema auto-discovery (no manual configuration)
 - ✅ Error handling and recovery
 - ✅ Development logging
+- ✅ Workflow intent detection
+- ✅ Multi-step process orchestration ready
 
 ## 📋 Development Commands
 
@@ -156,22 +196,39 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ## 📚 Architecture Notes
 
-### LangChain SQL Agent
+### THREE-LAYER ARCHITECTURE
+
+#### Layer 1: Brain (LangChain SQL Agent)
 - **Purpose**: Convert natural language to SQL queries
 - **Auto-discovery**: Automatically introspects database schema
 - **Error recovery**: Fixes invalid SQL and retries
 - **Location**: `lib/sql-agent.ts`
+- **Status**: ✅ IMPLEMENTED in Session 1
 
-### Vercel AI SDK
-- **Purpose**: Stream responses from GPT-4o to client
-- **Tool integration**: Registers database query tool
-- **Streaming**: Real-time updates without polling
+#### Layer 2: Heart (Mem0 Memory System)
+- **Purpose**: Persistent conversation memory and context
+- **Integration**: Uses PGVector for semantic search
+- **Status**: Coming in Session 2
+
+#### Layer 3: Arms & Legs (OpenAI AgentKit) **[CRITICAL]**
+- **Purpose**: Orchestrate complex workflows WITHOUT hardcoding business logic
+- **Workflows**: Create leads, generate posts, launch campaigns, qualify leads
+- **Tool-based**: Uses tool registry for multi-step automation
+- **Location**: `lib/agentkit-agent.ts`
+- **Status**: ✅ FOUNDATION IMPLEMENTED in Session 1, Full integration in Session 3
+
+### Vercel AI SDK (The Orchestrator)
+- **Purpose**: Stream responses from GPT-4 to client
+- **Integration**: Routes between all three layers
+- **Chat routing**: Detects user intent (query vs. workflow)
 - **Location**: `app/api/chat/route.ts`
+- **Status**: ✅ IMPLEMENTED with layer routing
 
 ### Single Instance Pattern
 - Database connection is lazily initialized
 - Shared across all chat requests
 - Prevents Redis/connection spam during build
+- Applied to both SQL Agent and AgentKit workflows
 
 ## 🚦 Future Sessions
 

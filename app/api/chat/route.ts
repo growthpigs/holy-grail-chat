@@ -1,12 +1,17 @@
 import { queryDatabase } from '@/lib/sql-agent';
+import { detectWorkflowIntent, executeAgentWorkflow, getAvailableWorkflows } from '@/lib/agentkit-agent';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 /**
  * POST /api/chat
- * Main chat endpoint that returns responses from GPT-4
- * Includes the database query tool for accessing application data
+ * Main chat endpoint with THREE LAYERS:
+ * 1. LangChain SQL Agent - Database queries (brain)
+ * 2. Mem0 Memory System - Context & history (heart)
+ * 3. OpenAI AgentKit - Workflow orchestration (arms & legs)
+ *
+ * Session 1 focuses on layers 1 and 3 foundation
  */
 export async function POST(request: Request) {
   const { messages } = await request.json();
@@ -26,7 +31,6 @@ export async function POST(request: Request) {
   }
 
   try {
-
     // Get the last user message
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.role !== 'user') {
@@ -39,11 +43,31 @@ export async function POST(request: Request) {
     }
 
     const userQuery = lastMessage.content;
-
-    // For database queries, use the SQL agent directly
-    // In Session 1, we check if the user is asking about data
     let response = '';
 
+    // === LAYER 3: AgentKit Workflow Detection ===
+    // Check if user is asking for a workflow (action-oriented)
+    const workflowIntent = detectWorkflowIntent(userQuery);
+
+    if (workflowIntent) {
+      try {
+        // User wants to execute a workflow - delegate to AgentKit
+        const workflowResult = await executeAgentWorkflow(workflowIntent, { query: userQuery });
+        response = JSON.stringify({
+          type: 'workflow',
+          workflow: workflowResult,
+          message: `🚀 Ready to execute workflow: ${workflowIntent}. Upgrading from Session 1 data queries to Session 3 workflow automation.`,
+        });
+        return new Response(response, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        response = `Error executing workflow: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
+    }
+
+    // === LAYER 1: LangChain SQL Agent ===
+    // Check if user is asking about data (query-oriented)
     if (
       userQuery.toLowerCase().includes('how many') ||
       userQuery.toLowerCase().includes('what') ||
@@ -52,23 +76,32 @@ export async function POST(request: Request) {
       userQuery.toLowerCase().includes('count')
     ) {
       try {
-        // User is likely asking about data - try to query the database
+        // User is asking about data - query the database
         const queryResult = await queryDatabase(userQuery);
         response = `Based on the database query: ${queryResult}`;
       } catch (error) {
-        // If query fails, provide a helpful message
         response = `I encountered an issue querying the database. Error: ${error instanceof Error ? error.message : 'Unknown error'}.
 
 Please ensure your database connection is configured correctly.`;
       }
     } else {
-      // For non-data queries, provide a helpful response
-      response = `Hello! I'm Holy Grail Chat. I can answer questions about your application's data. Try asking me things like:
-- "How many leads do we have?"
-- "Show me the top performing campaigns"
-- "What voice cartridges exist in the database?"
+      // Provide intelligent welcome message showing capabilities
+      response = `Hello! I'm Holy Grail Chat - your omniscient AI brain with three core capabilities:
 
-For now, I'm in Session 1 and can help with basic database queries. In future sessions, I'll understand even more about your application!`;
+🧠 **Brain**: Database Intelligence (LangChain)
+- Ask about your application data
+- Example: "How many leads do we have?"
+
+❤️ **Heart**: Conversation Memory (Mem0)
+- Coming in Session 2
+- Will remember your preferences
+
+💪 **Arms & Legs**: Workflow Automation (AgentKit)
+- Orchestrate complex business processes
+- Try asking: "Generate a viral post" or "Create lead from DM"
+- Available workflows: ${getAvailableWorkflows().map((w) => w.name).join(', ')}
+
+What would you like to do?`;
     }
 
     return new Response(
