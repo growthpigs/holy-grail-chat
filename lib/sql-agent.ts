@@ -27,11 +27,14 @@ export async function getSqlAgent() {
     };
   }
 
-  // Initialize OpenAI LLM
+  // Initialize OpenAI LLM (supports OpenRouter)
   const llm = new ChatOpenAI({
-    modelName: 'gpt-4',
+    modelName: 'openai/gpt-4-turbo-preview', // OpenRouter format
     temperature: 0, // Deterministic for SQL generation
     openAIApiKey: process.env.OPENAI_API_KEY,
+    configuration: {
+      baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+    },
   });
 
   // Create a simple agent wrapper that uses the LLM to generate queries
